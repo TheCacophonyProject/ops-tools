@@ -6,7 +6,7 @@ After=network-online.target
 Type=simple
 User=root
 Group=root
-ExecStart=/srv/tools/salt-auto-update.py
+ExecStart=/opt/ops-tools/salt/salt-auto-update.py
 Restart=on-failure
 RestartSec=5
 
