@@ -1,0 +1,14 @@
+[Unit]
+Description=Salt minion presence watcher
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/srv/tools/salt-presence.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

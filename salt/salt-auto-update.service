@@ -1,0 +1,14 @@
+[Unit]
+Description=Salt minion update scheduler
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/srv/tools/salt-auto-update.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

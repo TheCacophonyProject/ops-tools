@@ -1,0 +1,13 @@
+if [ $# -ne 2 ]; then
+    echo "usage: $0 <old-name> <new-name>"
+    exit 1
+fi
+
+if [ -e '/etc/salt/pki/master/minions/$2' ]; then
+    echo "New device name already exists. You must choose a different name!"
+    exit 1
+fi
+
+mv /etc/salt/pki/master/minions/$1 /etc/salt/pki/master/minions/$2
+echo "Renamed '"$1"' to  '"$2"'"
+
