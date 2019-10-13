@@ -27,7 +27,7 @@ function log() {
 
 # Inform influxdb and grafana
 function report() {
-  $CURL -i -XPOST "$INFLUX/write?db=$INFLUXDB" --data-binary "backup,postgresql=$DATABASE,host=$HOST success=$1"
+  $CURL --silent --show-error -i -XPOST "$INFLUX/write?db=$INFLUXDB" --data-binary "backup,postgresql=$DATABASE,host=$HOST success=$1"
 }
 
 function report_failure() {
@@ -40,6 +40,7 @@ function report_success() {
 
 
 # Make dump 
+log "Creating PostgreSQL dump at $dump_path"
 sudo -i -u postgres pg_dump -Fc $DATABASE --file $dump_path
 if [ $? == 0 ] ;then
   log "Postgres dump ok: $dump_path"
@@ -52,19 +53,26 @@ else
 fi
 
 # Backup to external place 
-output="$($MC cp --quiet $dump_path $REMOTESTORE 2>&1)"
-exitcode=$?
+exitcode=-1
+for try in {1..5}; do
+    log "Copying $dump_path to $REMOTESTORE (attempt $try)"
+    output="$($MC cp --quiet $dump_path $REMOTESTORE 2>&1)"
+    exitcode=$?
 
-# Horrible hack to work around bug in mc or Catalyst Cloud
-if [[ $exitcode -eq 1 ]] && [[ $output == *"Object does not exist"* ]]; then
-  log "recovering from spurious object store error"
-  exitcode=0
-fi
+    # Horrible hack to work around bug in mc or Catalyst Cloud
+    if [[ $exitcode -eq 1 ]] && [[ $output == *"Object does not exist"* ]]; then
+      log "recovering from spurious object store error"
+      exitcode=0
+    fi
 
-if [ $exitcode == 0 ] ;then
-  log "Postgres dump $DATABASE secured at objectstore $REMOTESTORE "
-else
-  log "Postgres dump $DATABASE failed at objectstore $REMOTESTORE "
+    if [[ $exitcode -eq 0 ]]; then
+        log "Postgres dump $DATABASE secured at objectstore $REMOTESTORE "  
+        break
+    fi
+done
+
+if [[ $exitcode -ne 0 ]]; then
+  log "Postgres dump $DATABASE failed at objectstore $REMOTESTORE "  
   log "mc output: $output"
 
   echo "Postgres dump $DATABASE not secured at objectstore $REMOTESTORE , please investigate" | mailx -s "Postgres dump failed" $MAIL
@@ -73,10 +81,9 @@ else
 fi
 
 # Verify download is correct
+log "Verifying backup uploaded is correct"
 local_sum="$(md5sum $dump_path | cut -f1 -d' ')"
-echo $local_sum
 remote_sum="$($MC --quiet cat $REMOTESTORE/$dump_file | md5sum | cut -f1 -d' ')"
-echo $remote_sum
 
 if [[ $local_sum != $remote_sum ]]; then
   log "Remote dump backup does not match local dump file"
@@ -86,7 +93,9 @@ if [[ $local_sum != $remote_sum ]]; then
 fi
 
 # Cleaning up. Local just 1, remote just $DAYS
+log "Removing old local backups"
 find $LOCALSTORE -name "*.pgdump" -mtime 1 -delete 
-$MC find $REMOTESTORE -name "*.pgdump" --older-than ${DAYS}d --exec "$MC rm {}"
+log "Removing old remote backups"
+$MC find $REMOTESTORE -name "*.pgdump" --older-than ${DAYS}d --exec "$MC --quiet rm {}"
 
 report_success
