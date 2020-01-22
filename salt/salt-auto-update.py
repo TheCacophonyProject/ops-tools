@@ -82,7 +82,7 @@ def match_minion_ping(event):
 
     if tag == "minion_ping":
         data = event.get("data")
-        if data == None:
+        if not data:
             return None
         return data.get("id")
     return None
