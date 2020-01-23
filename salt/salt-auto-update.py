@@ -33,10 +33,6 @@ MINION_BLACKLIST_PATH = "/etc/salt/autoupdate.blacklist"
 # InfluxDB database used to track state
 DB_NAME = "last-updated"
 
-# pattern to match tags for minion start events
-START_EVENT_PATTERN = re.compile("^salt/minion/([^/]+)/start$")
-
-
 def main():
     print("loading blacklist")
     blacklist = load_file_lines(MINION_BLACKLIST_PATH)
@@ -48,13 +44,12 @@ def main():
     salt_client = salt.client.LocalClient(auto_reconnect=True)
 
     # listen to salt-master events, filter out anything other than
-    # minion start events
-    event_matches = imap(match_start_event, iter(SaltListener()))
-    event_matches = ifilter(bool, event_matches)
+    # minion ping events
+    ping_events = imap(match_minion_ping, iter(SaltListener()))
+    ping_events = ifilter(bool, ping_events)
 
     # extract out minion_ids, filter out servers
-    minion_ids = imap(lambda m: m.group(1), event_matches)
-    minion_ids = ifilter(not_server, minion_ids)
+    minion_ids = ifilter(not_server, ping_events)
 
     # filter out blacklisted minions
     minion_ids = ifilter(lambda m: not m in blacklist, minion_ids)
@@ -62,7 +57,7 @@ def main():
     # filter out minions that have already been updated recently
     minion_ids = ifilter(state.is_update_required, minion_ids)
 
-    print("listening for minion start events")
+    print("listening for minion ping events")
     for minion_id in minion_ids:
         print("scheduling update for", minion_id)
         job_id = salt_client.cmd_async(minion_id, "state.apply")
@@ -77,7 +72,7 @@ def load_file_lines(filename):
         return set()
 
 
-def match_start_event(event):
+def match_minion_ping(event):
     if event is None:
         return None
 
@@ -85,8 +80,12 @@ def match_start_event(event):
     if tag == "salt/event/exit":
         sys.exit()
 
-    return START_EVENT_PATTERN.match(tag)
-
+    if tag == "minion_ping":
+        data = event.get("data")
+        if not data:
+            return None
+        return data.get("id")
+    return None
 
 def not_server(minion_id):
     return not minion_id.startswith("server-")
