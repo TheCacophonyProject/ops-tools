@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+"""
+This script queries the test and production servers and looks for
+Cacophony Project packages that need to be promoted from test to
+production.
+"""
+
+import subprocess
+import yaml
+
+PROD_API = ["server-prod-api"]
+TEST_API = "server-test-api"
+PROD_PROCESSING = ["server-prod-processing", "server-prod-processing02"]
+TEST_PROCESSING = "server-test-processing"
+
+
+def get_all_servers():
+    yield from PROD_API
+    yield TEST_API
+    yield from PROD_PROCESSING
+    yield TEST_PROCESSING
+
+
+def get_installed_packages(servers):
+    all_servers = " ".join(servers)
+    raw = subprocess.check_output(
+        ["sudo", "salt", "--out=yaml", "-L", all_servers, "pkg.list_pkgs"]
+    )
+    return yaml.safe_load(raw)
+
+
+def interesting_only(packages):
+    return dict(filter(is_interesting, packages.items()))
+
+
+def is_interesting(package):
+    name, _ = package
+    return name.startswith("cacophony-") or name.startswith("classifier-")
+
+
+def compare(installed, test_server, prod_servers):
+    test_packages = interesting_only(installed[test_server])
+
+    for prod_server in prod_servers:
+        prod_packages = interesting_only(installed[prod_server])
+
+        print(f"\n# {prod_server}")
+        mismatch = False
+        for name, test_version in test_packages.items():
+            prod_version = prod_packages.get(name)
+            if not prod_version:
+                print(f"{name}: not installed")
+                mismatch = True
+            elif test_version != prod_version:
+                print(f"{name}: prod={prod_version} test={test_version}")
+                mismatch = True
+
+        if not mismatch:
+            print("(no difference to test)")
+
+
+installed = get_installed_packages(get_all_servers())
+compare(installed, TEST_API, PROD_API)
+compare(installed, TEST_PROCESSING, PROD_PROCESSING)
