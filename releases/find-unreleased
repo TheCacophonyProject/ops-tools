@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+"""
+This tool reports changes in the Cacophony Project's Github repos
+which haven't been incorporated in a tagged release yet. It is used to
+guide the weekly release process.
+"""
+
+import os
+import subprocess
+from collections import defaultdict
+from multiprocessing.pool import Pool
+from pathlib import Path
+
+
+REPOS = """
+attiny-controller
+audiobait
+audio-analysis
+bird-monitor
+cacophony-browse
+cacophony-api
+cacophony-processing
+classifier-pipeline
+device-register
+event-reporter
+go-config
+management-interface
+modemd
+python-api
+python-cptv
+rtc-utils
+sidekick
+thermal-recorder
+thermal-uploader
+wpasupplicantconf
+""".strip().split()
+
+REPO_BASE_DIR = Path.home() / ".cache" / "find-unreleased"
+
+
+def main():
+    update_all()
+
+    for repo in REPOS:
+        repo_path = REPO_BASE_DIR / repo
+        os.chdir(repo_path)
+        tag = get_latest_tag()
+        if tag:
+            changes = changes_since(tag)
+            if changes:
+                header(repo)
+                print(changes)
+        else:
+            header(repo)
+            print("no tag! no release yet?")
+
+
+def update_all():
+    os.makedirs(REPO_BASE_DIR, exist_ok=True)
+
+    # Updating the Git repositories in parallel is *much* faster.
+    with Pool(32) as pool:
+        pool.map(_git_update, REPOS)
+
+
+def _git_update(repo):
+    repo_path = REPO_BASE_DIR / repo
+    if repo_path.is_dir():
+        print(f"Updating {repo}")
+        os.chdir(repo_path)
+        git("fetch", "--quiet", "--tags", "origin")
+        git("reset", "--quiet", "--hard", "origin/master")
+    else:
+        print(f"Cloning {repo}")
+        os.chdir(REPO_BASE_DIR)
+        git("clone", "--quiet", f"https://github.com/TheCacophonyProject/{repo}.git")
+
+
+def header(t):
+    print("\n# " + t)
+
+
+def changes_since(tag):
+    return git(
+        "log", "--reverse", "--pretty=format:%s", "--no-merges", f"{tag}.."
+    ).strip()
+
+
+def get_latest_tag():
+    try:
+        return git("describe", "--tags", "--abbrev=0").strip()
+    except subprocess.CalledProcessError as err:
+        if err.returncode == 128:
+            return None
+        raise err
+
+
+def git(*args):
+    return subprocess.check_output(
+        ("git",) + args, encoding="utf8", stderr=subprocess.STDOUT
+    )
+
+
+if __name__ == "__main__":
+    main()
