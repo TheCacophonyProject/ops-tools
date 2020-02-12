@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 from itertools import imap, ifilter
 import re
 import sys
+import subprocess
 
 from dateutil.parser import parse as parse_date
 from influxdb import InfluxDBClient
@@ -27,15 +28,13 @@ from salt_listener import SaltListener
 # don't update a device if it was last updated less than this long ago
 MIN_UPDATE_INTERVAL = timedelta(hours=23)
 
-# path to a file listing minions which should never be auto-updated
-MINION_BLACKLIST_PATH = "/etc/salt/autoupdate.blacklist"
-
 # InfluxDB database used to track state
 DB_NAME = "last-updated"
 
 def main():
     print("loading blacklist")
-    blacklist = load_file_lines(MINION_BLACKLIST_PATH)
+    blacklist = get_blacklist()
+    print("blacklist: " + str(blacklist))
 
     print("connecting to InfluxDB")
     state = UpdateState(DB_NAME, MIN_UPDATE_INTERVAL)
@@ -64,13 +63,15 @@ def main():
         print("  job id", job_id)
         state.record_update(minion_id, job_id)
 
-
-def load_file_lines(filename):
-    try:
-        return set(x.strip() for x in open(filename))
-    except IOError:
-        return set()
-
+def get_blacklist():
+    result = subprocess.check_output(["salt", "-N", "blacklist", "--preview-target"])
+    lines = result.split(b"\n")
+    deviceSet = set()
+    for i in lines:
+        device = str(i[2:].decode("utf-8")) # each line is preceded with "- "
+        if len(device) > 0:
+            deviceSet.add(device)
+    return deviceSet
 
 def match_minion_ping(event):
     if event is None:
