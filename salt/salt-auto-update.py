@@ -67,8 +67,8 @@ def get_blacklist():
     result = subprocess.check_output(["salt", "-N", "blacklist", "--preview-target"])
     lines = result.split(b"\n")
     deviceSet = set()
-    for i in lines:
-        device = str(i[2:].decode("utf-8")) # each line is preceded with "- "
+    for line in lines:
+        device = str(line[2:].decode("utf-8")) # each line is preceded with "- "
         if len(device) > 0:
             deviceSet.add(device)
     return deviceSet
