@@ -8,7 +8,11 @@ class SaltListener:
     def __init__(self, timeout=None):
         opts = salt.config.client_config(ETC_SALT_MASTER)
         self.listener = salt.utils.event.get_event(
-            "master", sock_dir=opts["sock_dir"], transport=opts["transport"], opts=opts
+            "master",
+            sock_dir=opts["sock_dir"],
+            transport=opts["transport"],
+            opts=opts,
+            raise_errors=True,
         )
         if timeout is None:
             self.timeout_secs = 0
