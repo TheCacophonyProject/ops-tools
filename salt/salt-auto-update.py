@@ -59,7 +59,7 @@ def main():
     print("listening for minion ping events")
     for minion_id in minion_ids:
         print("scheduling update for", minion_id)
-        job_id = salt_client.cmd_async(minion_id, "state.apply")
+        job_id = salt_client.cmd_async(minion_id, "cmd.run", ["if ! salt-updater --version; then salt-call state.apply --state-output=changes; fi;"])
         print("  job id", job_id)
         state.record_update(minion_id, job_id)
 
