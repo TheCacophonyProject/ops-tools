@@ -8,7 +8,7 @@ for i in raw_keys:
     if i != '':
         filtered_keys.append(i)
 
-salt_keys = subprocess.run(['cat', 'salt-keys-test-out'], stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+salt_keys = subprocess.run(['salt-key', '-L', '--no-color'], stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
 
 salt_accepted_keys = []
 salt_denied_keys = []
