@@ -12,6 +12,10 @@ HOST_NAME = socket.gethostname()
 CONFIG_FILE = "./psql-backup.yaml"
 DUMP_EXT = ".pgdump"
 
+def check_if_file_exists(bucket, key, size):
+    files = list(bucket.objects.filter(Prefix=key))
+    return len(files) == 1 and files[0].key == key and files[0].size == size
+
 dry_run = False
 success = 1
 if len(sys.argv) > 1:
@@ -41,9 +45,8 @@ dump_size = 0
 if dry_run:
     print("Skipping making dump file in dry run")
 else:
-    subprocess.call(["sudo", "-i", "-u", "postgres", "pg_dump", "-Fc", database, "--file", dump_name])
+    subprocess.check_call(["sudo", "-i", "-u", "postgres", "pg_dump", "-Fc", database, "--file", dump_name])
     dump_size = os.path.getsize(dump_path)
-    ##TODO exit if failed
 
 # Backup to each of the daily endpoints
 print('Running daily backups')
@@ -70,10 +73,9 @@ for daily_backup in config['daily']['buckets']:
                 if dry_run:
                     print('Skipping deletion in dry run')
                 else:
-                    print('deleting //TODO')
-        if file.key == dump_key and file.size == dump_size:
-            uploaded = True
-    if not uploaded:
+                    print('deleting //TODO') ##TODO
+
+    if not check_if_file_exists(bucket, dump_key, dump_size):
         print('File was not uploaded successfully')
         success = 0.0
     print(f'Finished backup on {bucket_name}')
@@ -107,6 +109,9 @@ for monthly_backup in config['monthly']['buckets']:
         else:
             bucket.upload_file(dump_path, dump_key)
 
+        if not check_if_file_exists(bucket, dump_key, dump_size):
+            print('File was not uploaded successfully')
+            success = 0.0
 print("Finished monthly backups")
 
 print("Deleting local backup")
