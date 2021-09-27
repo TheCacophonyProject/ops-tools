@@ -1,0 +1,32 @@
+database: 'the-database-name'
+prefix: 'psql' #/[daily|monthly]/hostname will get appended automatically
+
+daily:
+  days: 30
+  buckets:  # List of places to put daily backups
+    - bucket: 'bucket-name'
+      s3_auth: 's31'
+    - bucket: 'bucket2-name'
+      s3_auth: 's32'
+
+monthly:
+  buckets:  # List of places to put monthly backups
+    - bucket: 'bucket-name' # Try to use a S3 storage that has a object lock on it.
+      s3_auth: 's31'
+
+s3_auths: # List of authentications
+  s31:
+    endpoint_url: ''
+    aws_access_key_id: ''
+    aws_secret_access_key: ''
+  s32:
+    endpoint_url: ''
+    aws_access_key_id: ''
+    aws_secret_access_key: ''
+
+influx:
+  host: 'influx.cacophony.org.nz'
+  port: 8086
+  username: ''
+  password: ''
+  database: ''
