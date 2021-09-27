@@ -124,7 +124,10 @@ json_body = [{
             "host": HOST_NAME,
             "postgresql": config['database']
         },
-        "fields": { "success": float(success) }
+        "fields": {
+            "success": float(success),
+            "size": dump_size,
+        }
     }]
 client = InfluxDBClient(**config['influx'])
 print(json_body)
