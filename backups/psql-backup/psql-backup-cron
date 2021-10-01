@@ -1,0 +1,1 @@
+18 15 * * * root (cd /opt/ops-tools/backups/psql-backup && ./psql-backup.py) 2>&1 | logger --tag psql-backup
