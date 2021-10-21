@@ -1,0 +1,11 @@
+# The auth is done using minio config. This will normally be at /root/.mc/config.json
+localstore: 'local-s3-host/local-bucket' # [name of local minio storage host. normally 'local']/[s3 bucket name in api/config/app.js]
+remotestore: 's3-host/s3-bucket-name'    # [remote host (in minio config file)]/[remote bucket]
+remotePrefix: 'objectstore/[test/prod]'  # Prefix. Normally in the format 'objectstore/[test/prod]'
+
+influx:
+  host: 'influx.cacophony.org.nz'
+  port: 8086
+  username: ''
+  password: ''
+  database: ''

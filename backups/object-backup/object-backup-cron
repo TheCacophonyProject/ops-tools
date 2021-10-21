@@ -1,0 +1,1 @@
+15 00 * * * root (cd /opt/ops-tools/backups/object-backup && ./object-backup.py) 2>&1 | logger --tag object-backup
