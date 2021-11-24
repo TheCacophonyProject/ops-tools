@@ -5,7 +5,6 @@ remotePrefix: 'objectstore/[test/prod]'  # Prefix. Normally in the format 'objec
 
 influx:
   host: 'influx.cacophony.org.nz'
-  port: 8086
   username: ''
   password: ''
   database: ''

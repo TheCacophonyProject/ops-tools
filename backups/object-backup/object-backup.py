@@ -11,6 +11,7 @@ CONFIG_FILE = "./object-backup.yaml"
 MC = '/usr/local/bin/mc'
 
 exp = {
+    "T": 1000000000000,
     "G": 1000000000,
     "M": 1000000,
     "K": 1000,
@@ -91,7 +92,7 @@ json_body = [{
             "total_files": total_files,
         }
     }]
-client = InfluxDBClient(**config['influx'])
+client = InfluxDBClient(**config['influx'], port=443, ssl=True)
 print(json_body)
 if dry_run:
     print("Skipping reporting to influx")
