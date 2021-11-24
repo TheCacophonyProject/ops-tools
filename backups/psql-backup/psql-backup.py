@@ -129,7 +129,7 @@ json_body = [{
             "size": dump_size,
         }
     }]
-client = InfluxDBClient(**config['influx'])
+client = InfluxDBClient(**config['influx'], port=443, ssl=True)
 print(json_body)
 if dry_run:
     print("Skipping reporting to influx")
