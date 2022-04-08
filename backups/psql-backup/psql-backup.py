@@ -73,7 +73,7 @@ for daily_backup in config['daily']['buckets']:
                 if dry_run:
                     print('Skipping deletion in dry run')
                 else:
-                    print('deleting //TODO') ##TODO
+                    file.delete()
 
     if not check_if_file_exists(bucket, dump_key, dump_size):
         print('File was not uploaded successfully')
