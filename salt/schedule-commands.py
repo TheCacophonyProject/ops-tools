@@ -37,8 +37,6 @@ def main():
             print("Running command. Minion:", minion_id, ", Command:", command,", Args:", args)
             job = salt_client.cmd(minion_id, command, args)
             print("Result: ("+line.strip()+"):", job)
-
-            deleteMinionCommand(line)
             line = getMinionCommand(minion_id)
 
 def getMinionCommand(minion_id):
@@ -49,16 +47,12 @@ def getMinionCommand(minion_id):
         if len(words) == 0:
             continue
         if words[0] == minion_id:
+            lines.remove(line)
+            with open(COMMAND_FILE, "w") as fw:
+                for l in lines:
+                    fw.write(l)
             return line
     return None
-
-def deleteMinionCommand(line):
-    with open(COMMAND_FILE, "r") as fr:
-        lines = fr.readlines()
-    lines.remove(line)
-    with open(COMMAND_FILE, "w") as fw:
-        for l in lines:
-            fw.write(l)
 
 def match_minion_ping(event):
     if event is None:
@@ -68,7 +62,7 @@ def match_minion_ping(event):
     if tag == "salt/event/exit":
         sys.exit()
 
-    if tag == "minion_ping":
+    if tag == "minion_ping" or "salt/auth":
         data = event.get("data")
         if not data:
             return None
