@@ -1,0 +1,12 @@
+# Salt command schedule.
+# To schedule a command just add a line to this text file. Examples are below.
+# After a command has been run it will be delete from this file.
+# To see the results from the command just use something like `grep schedule-commands /var/log/syslog | grep <minion-id>`
+#
+# ===========Examples===========
+# Run a command:
+#   pi-1234 cmd.run "cat /etc/cacophony/config.toml"
+# Copy files from camera: This will copy the files to /var/cache/salt/master/minions/minion-id/files
+#   pi-1234 cp.push /var/log/file
+# Copy syslogs from camera:
+#   pi-1234 cp.push_dir /var/log/ glob='syslog*'
