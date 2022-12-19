@@ -44,7 +44,7 @@ with open(CONFIG_FILE, 'r') as f:
 localstore = config['localstore']
 remotestore = os.path.join(config['remotestore'], config['remotePrefix'])
 
-mc_command = ["/usr/local/bin/mc", "mirror", "--quiet", localstore, remotestore]
+mc_command = ["/usr/local/bin/mc", "mirror", "--quiet", "--exclude", "*-thumb", localstore, remotestore]
 if dry_run:
     mc_command.insert(mc_command.index("mirror")+1, "--fake")
 
@@ -92,7 +92,7 @@ json_body = [{
             "total_files": total_files,
         }
     }]
-client = InfluxDBClient(**config['influx'], port=443, ssl=True)
+client = InfluxDBClient(**config['influx'])
 print(json_body)
 if dry_run:
     print("Skipping reporting to influx")
