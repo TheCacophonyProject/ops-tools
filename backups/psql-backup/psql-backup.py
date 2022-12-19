@@ -12,6 +12,18 @@ HOST_NAME = socket.gethostname()
 CONFIG_FILE = "./psql-backup.yaml"
 DUMP_EXT = ".pgdump"
 
+def upload(bucket, dump_path, dump_key, retries=3):
+    for i in range(retries):
+        try:
+            bucket.upload_file(dump_path, dump_key)
+            print("File uploaded")
+            return
+        except:
+            if i < 0:
+                print("upload failed")
+                sys.exit()
+            print(f"upload failed, trying {retries-i-1} more times")
+
 def check_if_file_exists(bucket, key, size):
     files = list(bucket.objects.filter(Prefix=key))
     return len(files) == 1 and files[0].key == key and files[0].size == size
@@ -63,7 +75,7 @@ for daily_backup in config['daily']['buckets']:
     if dry_run:
         print("Skipping upload in dry run")
     else:
-        bucket.upload_file(dump_path, dump_key)
+        upload(bucket, dump_path, dump_key)
     # Deleting backup files older than 30 days
     uploaded = False
     for file in bucket.objects.filter(Prefix=prefix):
@@ -107,7 +119,7 @@ for monthly_backup in config['monthly']['buckets']:
         if dry_run:
             print("Skipping upload in dry run")
         else:
-            bucket.upload_file(dump_path, dump_key)
+            upload(bucket, dump_path, dump_key)
 
         if not check_if_file_exists(bucket, dump_key, dump_size):
             print('File was not uploaded successfully')
@@ -129,7 +141,7 @@ json_body = [{
             "size": dump_size,
         }
     }]
-client = InfluxDBClient(**config['influx'], port=443, ssl=True)
+client = InfluxDBClient(**config['influx'])
 print(json_body)
 if dry_run:
     print("Skipping reporting to influx")
