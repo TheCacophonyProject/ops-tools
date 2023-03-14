@@ -1,0 +1,5 @@
+influx:
+  host: 'influx.cacophony.org.nz'
+  username: ''
+  password: ''
+  database: ''
