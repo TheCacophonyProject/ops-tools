@@ -1,5 +1,7 @@
 influx:
   host: 'influx.cacophony.org.nz'
+  port: 443
+  ssl: True
   username: ''
   password: ''
   database: ''

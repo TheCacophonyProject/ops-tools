@@ -44,4 +44,4 @@ client = InfluxDBClient(**config['influx'])
 print(json_body)
 client.write_points(json_body)
 
-print("Finished PostgreSQL backups")
+print("Finished salt backups")
