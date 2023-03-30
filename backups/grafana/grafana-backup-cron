@@ -1,0 +1,1 @@
+0 12 * * * root (cd /opt/ops-tools/backups/grafana-backup && ./grafana-backup.py) 2>&1 | logger --tag grafana-backup
