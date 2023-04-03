@@ -1,0 +1,12 @@
+influx:
+  host: 'influx.cacophony.org.nz'
+  port: 443
+  ssl: True
+  verify_ssl: True
+  username: ''
+  password: ''
+  database: ''
+b2:
+  bucket: ''
+  app_key_id: ''
+  app_key: ''

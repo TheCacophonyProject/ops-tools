@@ -1,0 +1,3 @@
+b2sdk
+influxdb
+PyYAML>=5.1
