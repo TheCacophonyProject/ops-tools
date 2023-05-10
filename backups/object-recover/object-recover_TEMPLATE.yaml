@@ -1,0 +1,21 @@
+postgres:
+  host: 'localhost'
+  port: 5432
+  database: 'cacophony_db'
+  user: 'cacophony_db_user'
+  password: 'password'
+
+# Auth should be provided my minio MC config ~/.mc/config.json
+b2:
+  gateway: 'b2-cacophony-test-object-archive'
+  bucket: 'cacophony-test-object-archive'
+  prefix: ''  # If the objects are not stored in the root dir of the bucket, provide the prefix for the path to the objects.
+
+# Root user and password can be found in /etc/default/minio
+minio:
+  endpoint: 'localhost:9000'
+  gateway: 'cacophony_local'
+  bucket: 'cacophony'
+  access_key: 'minioadmin'
+  secret_key: 'minioadmin_password'
+  https: false # False for HTTP, True for HTTPS
