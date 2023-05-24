@@ -6,7 +6,7 @@ After=network-online.target
 Type=simple
 User=root
 Group=root
-ExecStart=/opt/ops-tools/salt/schedule-commands.py
+ExecStart=/opt/ops-tools/salt/schedule-commands/schedule-commands.py
 Restart=on-failure
 RestartSec=5
 

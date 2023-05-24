@@ -28,7 +28,7 @@ for dir in dirs:
     shutil.copytree(dir, os.path.join(temp_dir, os.path.basename(dir)))
 zip_file = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}_salt-backup.zip"
 shutil.make_archive(zip_file.replace(".zip", ""), 'zip', temp_dir)
-
+shutil.rmtree(temp_dir)
 
 # Upload backup to each endpoint
 success = 1
