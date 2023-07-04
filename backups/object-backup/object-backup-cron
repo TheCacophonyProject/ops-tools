@@ -1,1 +1,5 @@
-15 00 * * * root (cd /opt/ops-tools/backups/object-backup && ./object-backup.py) 2>&1 | logger --tag object-backup
+## Run prod backup at 11 AM
+00 11 * * * root (cd /opt/ops-tools/backups/object-backup && ./object-backup.py object-backup-prod.yaml) 2>&1 | logger --tag object-backup-prod
+
+## Run test backup at 3 PM
+00 15 * * * root (cd /opt/ops-tools/backups/object-backup && ./object-backup.py object-backup-test.yaml) 2>&1 | logger --tag object-backup-test
