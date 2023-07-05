@@ -13,9 +13,6 @@ import random
 import tempfile
 
 
-
-
-
 dry_run = False
 
 # check if there is at least one parameter: the config file path
