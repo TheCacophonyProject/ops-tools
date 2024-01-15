@@ -12,6 +12,7 @@ HOST_NAME = socket.gethostname()
 
 
 def main(config_file):
+    print("Running saltgit check")
     config = load_grafana_config(config_file)
 
     cmd = [
