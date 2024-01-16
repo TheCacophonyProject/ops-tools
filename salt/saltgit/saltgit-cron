@@ -1,0 +1,2 @@
+## Run salt git check every 5 minutes
+*/5 * * * * root (cd /opt/ops-tools/salt/saltgit && python3 ./saltgit.py saltgit.yaml) 2>&1 | logger --tag salt-git
