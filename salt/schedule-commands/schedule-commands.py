@@ -1,9 +1,10 @@
 #!/usr/bin/python3 -u
 
-"""Automatically run commands on devices when they connect"""
+"""Automatically run commands when devices connect"""
 
 from __future__ import print_function
-
+import os
+import subprocess
 import sys
 import shlex
 
@@ -12,7 +13,6 @@ import salt.client
 from salt_listener import SaltListener
 
 COMMAND_FILE = "/opt/ops-tools/salt/commands.txt"
-
 
 def main():
     print("creating Salt client")
@@ -27,39 +27,27 @@ def main():
 
     print("listening for minion ping events")
     for minion_id in minion_ids:
-        line = getMinionCommand(minion_id)
-        while line != None:
-            print("Line:", line.strip())
-            split = shlex.split(line)
-            minion_id = split[0]
-            command = split[1]
-            args = split[2:] if 2 < len(split) else []
-            print(
-                "Running command. Minion:",
-                minion_id,
-                ", Command:",
-                command,
-                ", Args:",
-                args,
-            )
-            job = salt_client.cmd(minion_id, command, args)
-            print("Result: (" + line.strip() + "):", job)
-            line = getMinionCommand(minion_id)
-
+        command = getMinionCommand(minion_id)
+        while command != None:
+            print(f"'{minion_id}' connected, running '{command}'")
+            result = subprocess.run(command.split(), capture_output=True, text=True)
+            print(result.stdout)
+            print(result.stderr)
 
 def getMinionCommand(minion_id):
     with open(COMMAND_FILE, "r") as file:
         lines = file.readlines()
+
     for line in lines:
-        words = line.strip().split()
-        if len(words) == 0:
-            continue
-        if words[0] == minion_id:
+        parts = line.strip().split(":", 1)
+        # Should be two parts, the minion id and the command
+        if len(parts) == 2 and parts[0] == minion_id:
+            # Found command to run. Remove it from the file then return it.
             lines.remove(line)
             with open(COMMAND_FILE, "w") as fw:
                 for l in lines:
                     fw.write(l)
-            return line
+            return parts[1].strip()
     return None
 
 

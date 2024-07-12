@@ -3,10 +3,16 @@
 # After a command has been run it will be delete from this file.
 # To see the results from the command just use something like `grep schedule-commands /var/log/syslog | grep <minion-id>`
 #
+# The lines are setup as <minion id>:<command>
 # ===========Examples===========
 # Run a command:
-#   pi-1234 cmd.run "cat /etc/cacophony/config.toml"
+#   pi-1234: salt pi-1234 cmd.run "cat /etc/cacophony/config.toml"
+#
 # Copy files from camera: This will copy the files to /var/cache/salt/master/minions/minion-id/files
-#   pi-1234 cp.push /var/log/file
+#   pi-1234: salt pi-1234 cp.push /var/log/file
+#
 # Copy syslogs from camera:
-#   pi-1234 cp.push_dir /var/log/ glob='syslog*'
+#   pi-1234: salt pi-1234 cp.push_dir /var/log/ glob='syslog*'
+#
+# Run a salt state, example of uploading logs 
+#   pi-1234: salt pi-1234 state.apply tc2/commands/upload-logs-2-days saltenv=dev
