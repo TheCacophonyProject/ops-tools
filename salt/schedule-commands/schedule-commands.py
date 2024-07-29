@@ -12,7 +12,7 @@ import salt.client
 
 from salt_listener import SaltListener
 
-COMMAND_FILE = "/opt/ops-tools/salt/commands.txt"
+COMMAND_FILE = "/opt/ops-tools/salt/schedule-commands/commands.txt"
 
 def main():
     print("creating Salt client")
