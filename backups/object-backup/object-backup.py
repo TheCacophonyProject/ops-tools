@@ -73,9 +73,11 @@ except:
 def get_archive_key(key):
     return os.path.join(config["archive"]["prefix"], key)
 
+
 def dont_backup_key(key):
     if key.endswith("-thumb"):
         return True
+
 
 # It is very easy to configure it to upload to the wrong bucket, so this checks that at least 80
 # out a random 100 recordings are already on the target bucket. Meaning it's probably the correct bucket.

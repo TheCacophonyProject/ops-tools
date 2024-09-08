@@ -31,6 +31,7 @@ MIN_UPDATE_INTERVAL = timedelta(hours=23)
 # InfluxDB database used to track state
 DB_NAME = "last-updated"
 
+
 def main():
     print("loading blacklist")
     blacklist = get_blacklist()
@@ -59,19 +60,27 @@ def main():
     print("listening for minion ping events")
     for minion_id in minion_ids:
         print("scheduling update for", minion_id)
-        job_id = salt_client.cmd_async(minion_id, "cmd.run", ["if ! salt-updater --version; then salt-call state.apply --state-output=changes; fi;"])
+        job_id = salt_client.cmd_async(
+            minion_id,
+            "cmd.run",
+            [
+                "if ! salt-updater --version; then salt-call state.apply --state-output=changes; fi;"
+            ],
+        )
         print("  job id", job_id)
         state.record_update(minion_id, job_id)
+
 
 def get_blacklist():
     result = subprocess.check_output(["salt", "-N", "blacklist", "--preview-target"])
     lines = result.split(b"\n")
     deviceSet = set()
     for line in lines:
-        device = str(line[2:].decode("utf-8")) # each line is preceded with "- "
+        device = str(line[2:].decode("utf-8"))  # each line is preceded with "- "
         if len(device) > 0:
             deviceSet.add(device)
     return deviceSet
+
 
 def match_minion_ping(event):
     if event is None:
@@ -87,6 +96,7 @@ def match_minion_ping(event):
             return None
         return data.get("id")
     return None
+
 
 def not_server(minion_id):
     return not minion_id.startswith("server-")
