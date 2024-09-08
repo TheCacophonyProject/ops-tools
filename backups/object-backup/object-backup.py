@@ -73,23 +73,31 @@ except:
 def get_archive_key(key):
     return os.path.join(config["archive"]["prefix"], key)
 
+def dont_backup_key(key):
+    if key.endswith("-thumb"):
+        return True
 
 # It is very easy to configure it to upload to the wrong bucket, so this checks that at least 80
 # out a random 100 recordings are already on the target bucket. Meaning it's probably the correct bucket.
+## TODO: Make an API request to the server for getting a random sample of keys from the target bucket.
 print(
     "Check that some files already match as a way of checking that the correct buckets are being/prefix used."
 )
 keys = []
 i = 0
-for obj in local_bucket.objects.page_size(10000):
+keys_sample_size = 10000
+for obj in local_bucket.objects.page_size(1000):
+    if dont_backup_key(obj.key):
+        continue
     keys.append(obj.key)
     i += 1
-    if i >= 10000:
+    if i >= keys_sample_size:
         break
 
-random_keys = []
-for i in range(100):
-    random_keys.append(random.choice(keys))
+random.shuffle(keys)
+
+# Select the first 100 random keys after shuffling
+random_keys = keys[:100]
 
 matching = 0
 
@@ -106,9 +114,16 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
     for key in random_keys:
         executor.submit(check_matching_key, key)
 
-if matching < 50:
+minimum_matching = 60
+if matching < minimum_matching:
     print(
-        f"{matching} out of 100 objects are already on the target bucket. Canceling backup."
+        textwrap.dedent(
+            f"""
+    Only {matching} out of 100 objects are already on the target bucket.This is less than {minimum_matching}.
+    A minimum of {minimum_matching} is required. Canceling backup.
+    This can be cased by a bucket misconfiguration or not a high enough keys to sample from, current size ({keys_sample_size})
+    """
+        )
     )
     time.sleep(2)
     sys.exit(0)
@@ -138,7 +153,7 @@ def handle_file(obj):
     global file_changed_count
     global matching_count
     try:
-        if obj.key.endswith("-thumb"):
+        if dont_backup_key(obj.key):
             return
         archive_key = os.path.join(config["archive"]["prefix"], obj.key)
         archive_obj = archive_bucket.Object(archive_key)
