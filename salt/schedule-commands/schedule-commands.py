@@ -14,6 +14,7 @@ from salt_listener import SaltListener
 
 COMMAND_FILE = "/opt/ops-tools/salt/commands.txt"
 
+
 def main():
     print("creating Salt client")
     salt_client = salt.client.LocalClient(auto_reconnect=True)
@@ -33,6 +34,7 @@ def main():
             result = subprocess.run(command.split(), capture_output=True, text=True)
             print(result.stdout)
             print(result.stderr)
+
 
 def getMinionCommand(minion_id):
     with open(COMMAND_FILE, "r") as file:

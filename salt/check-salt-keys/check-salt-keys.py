@@ -2,13 +2,21 @@
 import subprocess
 
 ## Put all the salt keys that you want to check in a local file called `salt-keys` with a new line for each key
-raw_keys = subprocess.run(['cat', 'salt-keys'], stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+raw_keys = (
+    subprocess.run(["cat", "salt-keys"], stdout=subprocess.PIPE)
+    .stdout.decode("utf-8")
+    .split("\n")
+)
 filtered_keys = []
 for i in raw_keys:
-    if i != '':
+    if i != "":
         filtered_keys.append(i)
 
-salt_keys = subprocess.run(['salt-key', '-L', '--no-color'], stdout=subprocess.PIPE).stdout.decode('utf-8').split("\n")
+salt_keys = (
+    subprocess.run(["salt-key", "-L", "--no-color"], stdout=subprocess.PIPE)
+    .stdout.decode("utf-8")
+    .split("\n")
+)
 
 salt_accepted_keys = []
 salt_denied_keys = []
@@ -45,7 +53,7 @@ for i in filtered_keys:
     else:
         unknown_keys.append(i)
 
-#print("accepted keys:", accepted_keys)
+# print("accepted keys:", accepted_keys)
 print("denied keys:", denied_keys)
 print("unaccepted keys:", unaccepted_keys)
 print("rejected keys:", rejected_keys)
