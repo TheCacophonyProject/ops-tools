@@ -7,12 +7,13 @@ import os
 import subprocess
 import sys
 import shlex
+import time
 
 import salt.client
 
 from salt_listener import SaltListener
 
-COMMAND_FILE = "/opt/ops-tools/salt/commands.txt"
+COMMAND_FILE = "/opt/ops-tools/salt/schedule-commands/commands.txt"
 
 
 def main():
@@ -29,12 +30,22 @@ def main():
     print("listening for minion ping events")
     for minion_id in minion_ids:
         command = getMinionCommand(minion_id)
-        while command != None:
-            print(f"'{minion_id}' connected, running '{command}'")
-            result = subprocess.run(command.split(), capture_output=True, text=True)
-            print(result.stdout)
-            print(result.stderr)
-
+        if command != None:
+            command_success = False
+            for i in range(0, 5):  # Try 5 times to run command. If it fails, just skip it.
+                print(f"'{minion_id}' connected, running '{command}'")
+                result = subprocess.run(command.split(), capture_output=True, text=True)
+                print(result.stdout)
+                print(result.stderr)
+                if result.returncode == 0:
+                    print("Command ran successfully")
+                    break
+                else:
+                    if i == 4:
+                        print("Command failed")
+                    else:
+                        print(f"Command failed, waiting 10 seconds and trying {4-i} more times")
+                        time.sleep(10)
 
 def getMinionCommand(minion_id):
     with open(COMMAND_FILE, "r") as file:
