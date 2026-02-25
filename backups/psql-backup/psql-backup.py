@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/opt/ops-tools/backups/psql-backup/venv/bin/python3
 import yaml
 import os
 import sys
