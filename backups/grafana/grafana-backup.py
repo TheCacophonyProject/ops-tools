@@ -7,7 +7,6 @@ from b2sdk.v1 import B2Api, InMemoryAccountInfo, UploadSourceBytes
 import yaml
 from influxdb import InfluxDBClient
 
-
 HOST_NAME = socket.gethostname()
 CONFIG_FILE = "./grafana-backup.yaml"
 
