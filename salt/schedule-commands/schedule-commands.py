@@ -32,9 +32,13 @@ def main():
         command = getMinionCommand(minion_id)
         if command != None:
             command_success = False
-            for i in range(0, 5):  # Try 5 times to run command. If it fails, just skip it.
+            for i in range(
+                0, 5
+            ):  # Try 5 times to run command. If it fails, just skip it.
                 print(f"'{minion_id}' connected, running '{command}'")
-                result = subprocess.run(shlex.split(command), capture_output=True, text=True)
+                result = subprocess.run(
+                    shlex.split(command), capture_output=True, text=True
+                )
                 print(result.stdout)
                 print(result.stderr)
                 if result.returncode == 0:
@@ -44,8 +48,11 @@ def main():
                     if i == 4:
                         print("Command failed")
                     else:
-                        print(f"Command failed, waiting 10 seconds and trying {4-i} more times")
+                        print(
+                            f"Command failed, waiting 10 seconds and trying {4-i} more times"
+                        )
                         time.sleep(10)
+
 
 def getMinionCommand(minion_id):
     with open(COMMAND_FILE, "r") as file:
