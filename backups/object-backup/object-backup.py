@@ -12,7 +12,6 @@ from influxdb import InfluxDBClient
 import random
 import tempfile
 
-
 dry_run = False
 
 # check if there is at least one parameter: the config file path
@@ -118,15 +117,11 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
 
 minimum_matching = 60
 if matching < minimum_matching:
-    print(
-        textwrap.dedent(
-            f"""
+    print(textwrap.dedent(f"""
     Only {matching} out of 100 objects are already on the target bucket.This is less than {minimum_matching}.
     A minimum of {minimum_matching} is required. Canceling backup.
     This can be cased by a bucket misconfiguration or not a high enough keys to sample from, current size ({keys_sample_size})
-    """
-        )
-    )
+    """))
     time.sleep(2)
     sys.exit(0)
 print("Done.")
