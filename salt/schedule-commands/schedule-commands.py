@@ -34,7 +34,7 @@ def main():
             command_success = False
             for i in range(0, 5):  # Try 5 times to run command. If it fails, just skip it.
                 print(f"'{minion_id}' connected, running '{command}'")
-                result = subprocess.run(command.split(), capture_output=True, text=True)
+                result = subprocess.run(shlex.split(command), capture_output=True, text=True)
                 print(result.stdout)
                 print(result.stderr)
                 if result.returncode == 0:
